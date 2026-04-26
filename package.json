@@ -1,6 +1,1 @@
-{
-  "name": "hackathon-idea-generator",
-  "version": "1.0.0",
-  "description": "AI-powered hackathon idea generator using Gemini (free)",
-  "engines": { "node": "18.x" }
-}
+{"name":"hackathon-idea-generator","version":"1.0.0","engines":{"node":"24.x"}} 
