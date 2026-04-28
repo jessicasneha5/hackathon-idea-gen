@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hackathon Idea Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --surface2: #1c1c27;
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.15);
+      --accent: #6c63ff;
+      --text: #f0f0f8;
+      --muted: #8888aa;
+      --mono: 'DM Mono', monospace;
+      --display: 'Syne', sans-serif;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--display);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1.5rem 5rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: -200px; left: 50%;
+      transform: translateX(-50%);
+      width: 800px; height: 600px;
+      background: radial-gradient(ellipse, rgba(108,99,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .container { width: 100%; max-width: 680px; position: relative; z-index: 1; }
+
+    /* HEADER */
+    header { text-align: center; margin-bottom: 3rem; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.35);
+      color: #a09aff; font-size: 11px; font-family: var(--mono);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 100px; margin-bottom: 1.5rem;
+    }
+    .badge::before {
+      content: ''; width: 6px; height: 6px;
+      background: var(--accent); border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
+    h1 {
+      font-size: clamp(2rem, 6vw, 3.2rem); font-weight: 800;
+      line-height: 1.05; letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #fff 0%, #a09aff 60%, #ff6b6b 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; margin-bottom: 0.75rem;
+    }
+    .subtitle { font-size: 0.95rem; color: var(--muted); }
+    .free-badge {
+      display: inline-block; margin-top: 0.6rem;
+      background: rgba(67,232,158,0.12); border: 1px solid rgba(67,232,158,0.3);
+      color: #43e89e; font-family: var(--mono); font-size: 10px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 100px;
+    }
+
+    /* INPUT */
+    .input-label {
+      display: block; font-size: 11px; font-family: var(--mono);
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 0.6rem;
+    }
+    .input-row { display: flex; gap: 10px; margin-bottom: 0.8rem; }
+    input#theme {
+      flex: 1; background: var(--surface); border: 1px solid var(--border2);
+      border-radius: 10px; color: var(--text); font-family: var(--display);
+      font-size: 1rem; padding: 0.85rem 1.1rem; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    input#theme:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,.15); }
+    input#theme::placeholder { color: #44445a; }
+    button#btn {
+      background: var(--accent); border: none; border-radius: 10px;
+      color: #fff; font-family: var(--display); font-size: 0.9rem;
+      font-weight: 700; padding: 0 1.5rem; cursor: pointer;
+      transition: background .2s, transform .15s; white-space: nowrap;
+    }
+    button#btn:hover { background: #5a52e0; }
+    button#btn:active { transform: scale(.97); }
+    button#btn:disabled { background: #2a2a3a; color: #555; cursor: not-allowed; }
+
+    /* CHIPS */
+    .suggestions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); font-size: 12px; font-family: var(--mono);
+      padding: 5px 12px; border-radius: 100px; cursor: pointer; transition: all .15s;
+      user-select: none;
+    }
+    .chip:hover { border-color: var(--accent); color: #a09aff; background: rgba(108,99,255,.08); }
+
+    /* ERROR */
+    #error-msg {
+      display: none; background: rgba(255,107,107,.08);
+      border: 1px solid rgba(255,107,107,.3); border-radius: 10px;
+      color: #ff9a9a; font-family: var(--mono); font-size: 13px;
+      padding: 0.9rem 1.1rem; margin-top: 1.25rem;
+    }
+
+    /* LOADER */
+    #loader { text-align: center; padding: 2.5rem 0; display: none; }
+    .loader-ring {
+      width: 36px; height: 36px; border: 2px solid var(--border2);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin .8s linear infinite; margin: 0 auto 0.75rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text { font-size: 13px; font-family: var(--mono); color: var(--muted); letter-spacing: .05em; }
+
+    /* OUTPUT */
+    #output-area { margin-top: 2rem; display: none; animation: fadeUp .4s ease; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .output-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;
+    }
+    .output-label { font-size: 11px; font-family: var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .output-actions { display: flex; gap: 8px; }
+    .action-btn {
+      background: transparent; border: 1px solid var(--border2); border-radius: 6px;
+      color: var(--muted); font-family: var(--mono); font-size: 11px;
+      padding: 5px 12px; cursor: pointer; transition: all .15s;
+    }
+    .action-btn:hover { border-color: #43e89e; color: #43e89e; }
+    #again-btn:hover { border-color: var(--accent); color: #a09aff; }
+
+    .idea-card { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; overflow: hidden; }
+    .idea-field {
+      padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);
+      display: flex; gap: 1rem; align-items: flex-start;
+    }
+    .idea-field:last-child { border-bottom: none; }
+    .field-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0; margin-top: 2px;
+    }
+    .ic1{background:rgba(108,99,255,.18)} .ic2{background:rgba(255,107,107,.18)}
+    .ic3{background:rgba(67,232,158,.18)} .ic4{background:rgba(255,196,54,.18)} .ic5{background:rgba(99,179,255,.18)}
+    .field-body { flex: 1; min-width: 0; }
+    .field-key {
+      font-size: 10px; font-family: var(--mono); letter-spacing: .13em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
+    }
+    .field-val { font-size: 1rem; line-height: 1.6; color: var(--text); word-break: break-word; }
+    .field-val.big { font-size: 1.25rem; font-weight: 700; letter-spacing: -.01em; }
+
+    footer { margin-top: 4rem; text-align: center; font-family: var(--mono); font-size: 11px; color: #33334a; letter-spacing: .08em; }
+    a { color: inherit; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="badge">Gemini 2.0 Flash</div>
+    <h1>Hackathon Idea Generator</h1>
+    <p class="subtitle">Enter a theme, get a structured idea in seconds.</p>
+    <span class="free-badge">✦ 100% Free API</span>
+  </header>
+
+  <label class="input-label" for="theme">Your Theme</label>
+  <div class="input-row">
+    <input id="theme" type="text" placeholder="e.g. AI + Healthcare, Fintech, Climate Tech" autocomplete="off" />
+    <button id="btn" onclick="generateIdea()">Generate ↗</button>
+  </div>
+  <div class="suggestions">
+    <span class="chip" onclick="fill('AI + Healthcare')">AI + Healthcare</span>
+    <span class="chip" onclick="fill('Climate Tech')">Climate Tech</span>
+    <span class="chip" onclick="fill('EdTech')">EdTech</span>
+    <span class="chip" onclick="fill('Fintech')">Fintech</span>
+    <span class="chip" onclick="fill('Web3 + Social')">Web3 + Social</span>
+    <span class="chip" onclick="fill('Mental Health')">Mental Health</span>
+  </div>
+
+  <div id="error-msg"></div>
+
+  <div id="loader">
+    <div class="loader-ring"></div>
+    <p class="loader-text">Brewing your idea...</p>
+  </div>
+
+  <div id="output-area">
+    <div class="output-header">
+      <span class="output-label">Generated Idea</span>
+      <div class="output-actions">
+        <button class="action-btn" id="again-btn" onclick="generateIdea()">Generate Again</button>
+        <button class="action-btn" id="copy-btn" onclick="copyIdea()">Copy</button>
+      </div>
+    </div>
+    <div class="idea-card">
+      <div class="idea-field">
+        <div class="field-icon ic1">💡</div>
+        <div class="field-body"><div class="field-key">Title</div><div class="field-val big" id="f-title"></div></div>
+      </div>
+      <div class="idea-field">
+        <div class="field-icon ic2">🔥</div>
+        <div class="field-body"><div class="field-key">Problem</div><div class="field-val" id="f-problem"></div></div>
+      </div>
+      <div class="idea-field">
+        <div class="field-icon ic3">✅</div>
+        <div class="field-body"><div class="field-key">Solution</div><div class="field-val" id="f-solution"></div></div>
+      </div>
+      <div class="idea-field">
+        <div class="field-icon ic4">⚙️</div>
+        <div class="field-body"><div class="field-key">Tech Stack</div><div class="field-val" id="f-tech"></div></div>
+      </div>
+      <div class="idea-field">
+        <div class="field-icon ic5">⚡</div>
+        <div class="field-body"><div class="field-key">Unique Feature</div><div class="field-val" id="f-unique"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>Powered by <a href="https://aistudio.google.com" target="_blank">Google Gemini</a> · Free tier · No credit card</footer>
+</div>
+
+<script>
+  function fill(t) {
+    document.getElementById('theme').value = t;
+    document.getElementById('theme').focus();
+  }
+
+  function parse(text, label) {
+    const m = text.match(new RegExp(label + '\\s*[:\\-]?\\s*(.+?)(?=\\n[A-Za-z]|$)', 'is'));
+    return m ? m[1].trim() : '—';
+  }
+
+  function showErr(m) {
+    const e = document.getElementById('error-msg');
+    e.textContent = '⚠ ' + m;
+    e.style.display = 'block';
+  }
+  function hideErr() { document.getElementById('error-msg').style.display = 'none'; }
+
+  async function generateIdea() {
+    const theme = document.getElementById('theme').value.trim();
+    if (!theme) { showErr('Please enter a theme first.'); return; }
+    hideErr();
+    document.getElementById('output-area').style.display = 'none';
+    document.getElementById('loader').style.display = 'block';
+    document.getElementById('btn').disabled = true;
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'API error');
+
+      document.getElementById('f-title').textContent    = parse(data.text, 'Title');
+      document.getElementById('f-problem').textContent  = parse(data.text, 'Problem');
+      document.getElementById('f-solution').textContent = parse(data.text, 'Solution');
+      document.getElementById('f-tech').textContent     = parse(data.text, 'Tech Stack');
+      document.getElementById('f-unique').textContent   = parse(data.text, 'Unique Feature');
+
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('output-area').style.display = 'block';
+    } catch(e) {
+      document.getElementById('loader').style.display = 'none';
+      showErr(e.message);
+    } finally {
+      document.getElementById('btn').disabled = false;
+    }
+  }
+
+  function copyIdea() {
+    const ids = ['f-title','f-problem','f-solution','f-tech','f-unique'];
+    const keys = ['Title','Problem','Solution','Tech Stack','Unique Feature'];
+    const text = keys.map((k,i) => k + ': ' + document.getElementById(ids[i]).textContent).join('\n');
+    navigator.clipboard.writeText(text).then(() => {
+      const b = document.getElementById('copy-btn');
+      b.textContent = 'Copied ✓';
+      setTimeout(() => b.textContent = 'Copy', 2000);
+    });
+  }
+
+  document.getElementById('theme').addEventListener('keydown', e => {
+    if (e.key === 'Enter') generateIdea();
+  });
+</script>
+</body>
+</html>

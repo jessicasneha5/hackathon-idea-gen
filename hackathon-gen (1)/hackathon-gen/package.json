@@ -1,0 +1,9 @@
+{
+  "name": "hackathon-idea-generator",
+  "version": "1.0.0",
+  "description": "AI-powered hackathon idea generator using Google Gemini 2.5 Flash",
+  "engines": { "node": "24.x" },
+  "keywords": ["hackathon", "ai", "gemini", "idea-generator", "vercel"],
+  "author": "Jessica Sneha",
+  "license": "MIT"
+}
