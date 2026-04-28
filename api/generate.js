@@ -5,14 +5,12 @@ export default async function handler(req, res) {
   if (!theme) return res.status(400).json({ error: 'Theme is required' });
 
   const prompt = `Generate a creative hackathon project idea for the theme: "${theme}".
-
 Respond with EXACTLY this format, each on its own line:
 Title: <one catchy name>
 Problem: <one sentence describing the problem>
 Solution: <one sentence describing what you build>
 Tech Stack: <comma-separated list of technologies>
 Unique Feature: <one sentence on what makes it stand out>
-
 Only output the 5 lines above, nothing else.`;
 
   try {
