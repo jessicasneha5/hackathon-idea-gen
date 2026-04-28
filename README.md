@@ -50,3 +50,4 @@ echo "GEMINI_API_KEY=AIza..." > .env
 vercel dev
 # Open http://localhost:3000
 ```
+ 
